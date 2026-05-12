@@ -133,3 +133,7 @@ int e1000_receive_packet(void* buf) {
     
     return len;
 }
+
+int e1000_has_packet() {
+    return (rx_descs[rx_cur].status & 0x01) != 0;
+}

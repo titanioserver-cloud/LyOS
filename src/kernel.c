@@ -14,6 +14,7 @@
 #include "../include/ide.h"
 #include "../include/exfat.h"
 #include "../include/net.h"
+#include "../include/ac97.h"
 
 struct mb2_tag { uint32_t type; uint32_t size; };
 struct mb2_tag_fb { uint32_t type; uint32_t size; uint64_t addr; uint32_t pitch; uint32_t w; uint32_t h; uint8_t bpp; };
@@ -29,8 +30,17 @@ int sys_exec_impl(const char* filename) {
 }
 
 void bg_process() {
+    int dhcp_attempts = 0;
     while (1) { 
         net_poll();
+        dhcp_attempts++;
+        if (dhcp_attempts == 300) {
+            dhcp_request();
+        } else if (dhcp_attempts == 600) {
+            dhcp_request();
+        } else if (dhcp_attempts == 900) {
+            dhcp_request();
+        }
         __asm__ volatile ("mov $19, %%rax\n int $0x80" ::: "rax");
     } 
 }
@@ -54,7 +64,7 @@ void kernel_main(uint64_t mb_addr) {
     }
 
     gdt_init();
-    memory_init(0x01000000, 0x1E000000); 
+    memory_init(0x01000000, 0x5DC00000);
     init_paging((uint64_t)fb_ptr);
 
     init_graphics(fb_ptr, 1280, 720);
@@ -64,7 +74,8 @@ void kernel_main(uint64_t mb_addr) {
 
     pci_enumerate();
     init_e1000();
-    
+    net_init();
+    ac97_init();
     ide_init();
     exfat_init();
     

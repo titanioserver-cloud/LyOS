@@ -78,6 +78,7 @@ int recv_packet(void* buf);
 void send_arp(uint8_t* ip);
 void ping_ip(uint8_t* ip, uint8_t* mac);
 void request_dhcp();
+void dhcp_request();
 void send_dns(const char* domain);
 void send_tcp(uint8_t* ip, uint16_t sport, uint16_t dport, uint32_t seq, uint32_t ack, uint8_t flags, const char* data, int dlen);
 void get_disk_label(char* buf);
@@ -86,7 +87,20 @@ void cd(const char* path);
 void* create_shared_buffer(int id, size_t size);
 void* get_shared_buffer(int id);
 int tcp_connect(uint8_t* ip, uint16_t port);
+int tcp_state(int s);
 void tcp_send(int s, const char* data, int len);
 int tcp_recv(int s, char* buf, int max_len);
+
+// Novas funcoes de disco
+int disk_mkfile(const char* name);
+int disk_mkdir(const char* name);
+int disk_delete(const char* name);
+int disk_writefile(const char* name, const uint8_t* data, uint32_t size);
+int disk_readfile(const char* name, uint8_t* buffer, uint32_t max_size);
+uint32_t disk_getfilesize(const char* name);
+void disk_getcwd(char* out);
+
+void sys_play_wav(const char* filename);
+void sys_stop_wav();
 
 #endif

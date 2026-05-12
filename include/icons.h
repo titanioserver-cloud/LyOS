@@ -177,6 +177,8 @@ const uint32_t icon_snake[1024] = {
     0x6B94BF56, 0x7A32BA94, 0x7727B89A, 0x7727B89A, 0x7727B89A, 0xAB1CAA8E, 0xB61BAA8C, 0xB06BB865, 0xB6ABC046, 0xB6ABC046, 0xB6ABC046, 0xA1A3C049, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 };
 
-const uint32_t* app_icons[5] = { icon_terminal, icon_browser, icon_calc, icon_sysmon, icon_snake };
+#include "explorer_icon.h"
+
+const uint32_t* app_icons[6] = { icon_terminal, icon_browser, icon_calc, icon_sysmon, icon_snake, icon_explorer };
 
 #endif

@@ -8,6 +8,7 @@
 #include "../include/e1000.h"
 #include "../include/net.h"
 #include "../include/exfat.h"
+#include "../include/ac97.h"
 
 extern uint8_t mouse_byte[3];
 extern uint64_t do_syscall(uint64_t sysno, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5, uint64_t p6);
@@ -77,7 +78,7 @@ void syscall_handler(struct regs* r) {
         case 27: r->rax = e1000_receive_packet((void*)r->rdi); break;
         case 28: net_send_arp((uint8_t*)r->rdi); break;
         case 29: net_send_icmp((uint8_t*)r->rdi, (uint8_t*)r->rsi); break;
-        case 30: net_send_dhcp(); break;
+        case 30: dhcp_request(); break;
         case 31: net_send_dns((const char*)r->rdi); break;
         case 32: {
             uint8_t* ip = (uint8_t*)r->rdi;
@@ -109,5 +110,58 @@ void syscall_handler(struct regs* r) {
         case 38: r->rax = tcp_connect((uint8_t*)r->rdi, (uint16_t)r->rsi); break;
         case 39: tcp_send((int)r->rdi, (const char*)r->rsi, (int)r->rdx); break;
         case 40: r->rax = tcp_recv((int)r->rdi, (char*)r->rsi, (int)r->rdx); break;
+        case 41: r->rax = tcp_state((int)r->rdi); break;
+        case 42: r->rax = exfat_create_file((const char*)r->rdi); break;
+        case 43: r->rax = exfat_create_dir((const char*)r->rdi); break;
+        case 44: r->rax = exfat_delete((const char*)r->rdi); break;
+        case 45: r->rax = exfat_write_file((const char*)r->rdi, (const uint8_t*)r->rsi, (uint32_t)r->rdx); break;
+        case 46: r->rax = exfat_read_file((const char*)r->rdi, (uint8_t*)r->rsi, (uint32_t)r->rdx); break;
+        case 47: r->rax = exfat_get_file_size((const char*)r->rdi); break;
+        case 48: exfat_getcwd((char*)r->rdi); break;
+        case 49: {
+            const char* filename = "musica.wav";
+            uint32_t file_size = exfat_get_file_size(filename);
+            
+            // Se nao encontrar "musica.wav", tenta com barra
+            if (file_size == 0) {
+                filename = "/musica.wav";
+                file_size = exfat_get_file_size(filename);
+            }
+            
+            if (file_size > 44) {
+                uint8_t* pcm_data = kmalloc(file_size);
+                if (pcm_data) {
+                    exfat_read_file(filename, pcm_data, file_size);
+                    
+                    uint32_t offset = 12; 
+                    uint32_t data_size = 0;
+                    while (offset < file_size - 8) {
+                        if (pcm_data[offset] == 'd' && pcm_data[offset+1] == 'a' && 
+                            pcm_data[offset+2] == 't' && pcm_data[offset+3] == 'a') {
+                            data_size = *((uint32_t*)(pcm_data + offset + 4));
+                            offset += 8;
+                            break;
+                        }
+                        uint32_t chunk_size = *((uint32_t*)(pcm_data + offset + 4));
+                        offset += 8 + chunk_size;
+                    }
+                    
+                    if (data_size > 0 && offset < file_size) {
+                        ac97_play(pcm_data + offset, data_size);
+                    } else {
+                        ac97_play(pcm_data + 44, file_size - 44);
+                    }
+                }
+            } else {
+                uint8_t* err_pcm = kmalloc(16384);
+                for(int i=0; i<16384; i++) err_pcm[i] = (i % 32) > 16 ? 200 : 50;
+                ac97_play(err_pcm, 16384);
+            }
+            break;
+        }
+        case 50: {
+            ac97_stop();
+            break;
+        }
     }
 }

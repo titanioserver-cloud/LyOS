@@ -39,6 +39,7 @@ int recv_packet(void* buf) { return (int)syscall(27, (uint64_t)buf, 0, 0, 0, 0, 
 void send_arp(uint8_t* ip) { syscall(28, (uint64_t)ip, 0, 0, 0, 0, 0); }
 void ping_ip(uint8_t* ip, uint8_t* mac) { syscall(29, (uint64_t)ip, (uint64_t)mac, 0, 0, 0, 0); }
 void request_dhcp() { syscall(30, 0, 0, 0, 0, 0, 0); }
+void dhcp_request() { syscall(30, 0, 0, 0, 0, 0, 0); }
 void send_dns(const char* domain) { syscall(31, (uint64_t)domain, 0, 0, 0, 0, 0); }
 void send_tcp(uint8_t* ip, uint16_t sport, uint16_t dport, uint32_t seq, uint32_t ack, uint8_t flags, const char* data, int dlen) {
     uint64_t p1 = (uint64_t)ip;
@@ -55,6 +56,19 @@ void* get_shared_buffer(int id) { return (void*)syscall(37, id, 0, 0, 0, 0, 0); 
 int tcp_connect(uint8_t* ip, uint16_t port) { return (int)syscall(38, (uint64_t)ip, port, 0, 0, 0, 0); }
 void tcp_send(int s, const char* data, int len) { syscall(39, s, (uint64_t)data, len, 0, 0, 0); }
 int tcp_recv(int s, char* buf, int max_len) { return (int)syscall(40, s, (uint64_t)buf, max_len, 0, 0, 0); }
+int tcp_state(int s) { return (int)syscall(41, s, 0, 0, 0, 0, 0); }
+
+int disk_mkfile(const char* name) { return (int)syscall(42, (uint64_t)name, 0, 0, 0, 0, 0); }
+int disk_mkdir(const char* name) { return (int)syscall(43, (uint64_t)name, 0, 0, 0, 0, 0); }
+int disk_delete(const char* name) { return (int)syscall(44, (uint64_t)name, 0, 0, 0, 0, 0); }
+int disk_writefile(const char* name, const uint8_t* data, uint32_t size) { return (int)syscall(45, (uint64_t)name, (uint64_t)data, size, 0, 0, 0); }
+int disk_readfile(const char* name, uint8_t* buffer, uint32_t max_size) { return (int)syscall(46, (uint64_t)name, (uint64_t)buffer, max_size, 0, 0, 0); }
+uint32_t disk_getfilesize(const char* name) { return (uint32_t)syscall(47, (uint64_t)name, 0, 0, 0, 0, 0); }
+void disk_getcwd(char* out) { syscall(48, (uint64_t)out, 0, 0, 0, 0, 0); }
+
+
+void sys_play_wav(const char* filename) { syscall(49, (uint64_t)filename, 0, 0, 0, 0, 0); }
+void sys_stop_wav() { syscall(50, 0, 0, 0, 0, 0, 0); }
 
 void strcpy(char* dest, const char* src) { while (*src) *dest++ = *src++; *dest = '\0'; }
 void strcat(char* dest, const char* src) { while (*dest) dest++; while (*src) *dest++ = *src++; *dest = '\0'; }
